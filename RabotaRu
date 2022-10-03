@@ -1,0 +1,33 @@
+import requests
+from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
+import pandas as pd
+import time
+data = [['name','salary','company_name','location']]
+ua = fake_useragent.UserAgent()
+
+for page in range(1,271):
+  link = f'https://chechnya.rabota.ru/?sort=relevance&page={page}'
+  response = requests.get(link, headers={'User-Agent': ua.random})
+
+
+  soup = BeautifulSoup(response.content, 'lxml')
+  
+  elements = soup.find_all('div', class_="vacancy-preview-card__top")
+
+  for element in elements:
+    name = element.find('h3').text.strip()
+    salary = element.find(class_='vacancy-preview-card__salary').text.strip().replace('\xa0','')
+    company_name = element.find('span', class_='vacancy-preview-card__company-name').text.strip()
+    features = element.find('span', {'class':'vacancy-preview-location__address-text'}).text.strip()
+    data.append([name, salary, company_name, features])
+  print(page)
+  time.sleep(1)
+  
+
+with open('rabotaru.csv','w', encoding='utf-8') as f:         #Запишем в файл
+    fq = csv.writer(f, delimiter=',', dialect='excel')
+    for a in data:
+
+      fq.writerow(a)
+pd.DataFrame(data)
